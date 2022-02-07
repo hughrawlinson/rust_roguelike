@@ -1,4 +1,6 @@
-use super::{CombatStats, Map, Player, Position, RunState, State, Viewshed, WantsToMelee};
+use super::{
+  CombatStats, Map, Player, Position, RunState, State, Viewshed, WantsToMelee, MAPHEIGHT, MAPWIDTH,
+};
 use rltk::{Point, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
@@ -34,8 +36,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     }
 
     if !map.blocked[destination_idx] {
-      pos.x = min(79, max(0, pos.x + delta_x));
-      pos.y = min(49, max(0, pos.y + delta_y));
+      pos.x = min(MAPWIDTH as i32 - 1, max(0, pos.x + delta_x));
+      pos.y = min(MAPHEIGHT as i32 - 1, max(0, pos.y + delta_y));
 
       ppos.x = pos.x;
       ppos.y = pos.y;

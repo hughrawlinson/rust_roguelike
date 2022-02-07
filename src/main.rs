@@ -2,7 +2,10 @@ use rltk::{GameState, Point, Rltk, RGB};
 use specs::prelude::*;
 
 mod components;
+mod gui;
 pub use components::*;
+mod gamelog;
+pub use gamelog::*;
 mod map;
 pub use map::*;
 mod player;
@@ -93,14 +96,16 @@ impl GameState for State {
         ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
       }
     }
+    gui::draw_ui(&self.ecs, ctx);
   }
 }
 
 fn main() -> rltk::BError {
   use rltk::RltkBuilder;
-  let context = RltkBuilder::simple80x50()
+  let mut context = RltkBuilder::simple80x50()
     .with_title("Roguelike Tutorial")
     .build()?;
+  context.with_post_scanlines(true);
 
   let mut gs = State { ecs: World::new() };
   gs.ecs.register::<Player>();
@@ -127,8 +132,7 @@ fn main() -> rltk::BError {
       _ => (rltk::to_cp437('o'), "Orc".to_string()),
     };
 
-    let player_entity = gs
-      .ecs
+    gs.ecs
       .create_entity()
       .with(Position { x, y })
       .with(Renderable {
@@ -153,14 +157,13 @@ fn main() -> rltk::BError {
         power: 4,
       })
       .build();
-
-    gs.ecs.insert(player_entity);
   }
 
   gs.ecs.insert(map);
 
   gs.ecs.insert(Point::new(player_x, player_y));
-  gs.ecs
+  let player_entity = gs
+    .ecs
     .create_entity()
     .with(Position {
       x: player_x,
@@ -187,6 +190,11 @@ fn main() -> rltk::BError {
       power: 5,
     })
     .build();
+  gs.ecs.insert(player_entity);
+
+  gs.ecs.insert(gamelog::GameLog {
+    entries: vec!["Welcome to Rusty Roguelike".to_string()],
+  });
 
   rltk::main_loop(context, gs)
 }
